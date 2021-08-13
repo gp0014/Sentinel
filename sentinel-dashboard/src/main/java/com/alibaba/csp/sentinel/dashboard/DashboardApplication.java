@@ -16,7 +16,7 @@
 package com.alibaba.csp.sentinel.dashboard;
 
 import com.alibaba.csp.sentinel.init.InitExecutor;
-
+import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Carpenter Lee
  */
 @SpringBootApplication
+@EnableApolloConfig("application")
 public class DashboardApplication {
 
     public static void main(String[] args) {

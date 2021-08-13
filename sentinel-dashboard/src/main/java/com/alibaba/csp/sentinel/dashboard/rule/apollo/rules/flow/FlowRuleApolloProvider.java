@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.apollo;
+package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.flow;
 
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.util.StringUtil;
-import com.ctrip.framework.apollo.openapi.client.ApolloOpenApiClient;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
 import java.util.ArrayList;
@@ -27,30 +28,32 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
 /**
- * @author hantianwei@gmail.com
- * @since 1.5.0
+ * @author darren
  */
 @Component("flowRuleApolloProvider")
 public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
 
-    @Autowired
-    private ApolloOpenApiClient apolloOpenApiClient;
+
     @Autowired
     private Converter<String, List<FlowRuleEntity>> converter;
+    @Autowired
+    private ApolloConfigService apolloConfigService;
 
     @Override
-    public List<FlowRuleEntity> getRules(String appName) throws Exception {
-        String flowDataId = ApolloConfigUtil.getFlowDataId(appName);
-        OpenNamespaceDTO openNamespaceDTO = apolloOpenApiClient.getNamespace(appName, "DEV", "default", "application");
+    public List<FlowRuleEntity> getRules(String appId) throws Exception {
+        //动态从apollo拉取应用的Sentinel配置信息
+        AppSentinelApolloConfig appSentinelConfig = apolloConfigService.getOrInitAppSentinelConfig(appId);
+        //动态拉取namespace
+        OpenNamespaceDTO openNamespaceDTO = apolloConfigService.getNameSpaceByAppIdAndSentinelApolloConfig(appId, appSentinelConfig);
         String rules = openNamespaceDTO
             .getItems()
             .stream()
-            .filter(p -> p.getKey().equals(flowDataId))
+            .filter(p -> p.getKey().equals(appSentinelConfig.getFlowRuleKey()))
             .map(OpenItemDTO::getValue)
             .findFirst()
             .orElse("");
-
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }

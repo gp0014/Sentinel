@@ -140,7 +140,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
           let url = '/dashboard/gateway/flow/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败!'+data.msg);
         }
       }).error((data, header, config, status) => {
           alert('未知错误');
@@ -155,7 +155,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
         if (data.code == 0) {
           gatewayFlowRuleDialog.close();
         } else {
-          alert('失败!');
+          alert('失败!'+data.msg);
         }
       });
     }
@@ -205,7 +205,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
           var url = '/dashboard/degrade/' + $scope.app;
           $location.path(url);
         } else {
-          alert('失败!');
+          alert('失败!'+data.msg);
         }
       });
     }
@@ -218,7 +218,7 @@ app.controller('GatewayIdentityCtl', ['$scope', '$stateParams', 'IdentityService
         if (data.code == 0) {
           degradeRuleDialog.close();
         } else {
-          alert('失败!');
+          alert('失败!'+data.msg);
         }
       });
     }

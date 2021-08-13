@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.datasource.entity.rule;
+package com.alibaba.csp.sentinel.dashboard.rule.apollo;
 
-import com.alibaba.csp.sentinel.slots.block.Rule;
-import java.util.Date;
 
 /**
- * @author leyou
+ * @author darren
  */
-public interface RuleEntity {
+public final class ApolloConfigUtil {
+
+    public static final String FLOW_DATA_ID_POSTFIX = "-flow-rules";
+
+    private ApolloConfigUtil() {
+    }
+
+    public static String getFlowDataId(String appName) {
+        return String.format("%s%s", appName, FLOW_DATA_ID_POSTFIX);
+    }
 
 
-    Long getId();
-
-    void setId(Long id);
-
-    String getApp();
-
-    String getIp();
-
-    Integer getPort();
-
-    Date getGmtCreate();
-    
-    Rule toRule();
 }

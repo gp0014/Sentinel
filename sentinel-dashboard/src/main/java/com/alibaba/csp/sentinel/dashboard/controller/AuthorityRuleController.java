@@ -15,23 +15,22 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
-import java.util.Date;
-import java.util.List;
-
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService.PrivilegeType;
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.util.StringUtil;
-
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
-
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.alibaba.csp.sentinel.slots.block.RuleConstant;
+import com.alibaba.csp.sentinel.util.StringUtil;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,10 +51,16 @@ public class AuthorityRuleController {
 
     private final Logger logger = LoggerFactory.getLogger(AuthorityRuleController.class);
 
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+
     @Autowired
     private RuleRepository<AuthorityRuleEntity, Long> repository;
+
+    @Autowired
+    @Qualifier("authorityRuleApolloProvider")
+    private DynamicRuleProvider<List<AuthorityRuleEntity>> ruleProvider;
+    @Autowired
+    @Qualifier("authorityRuleApolloPublisher")
+    private DynamicRulePublisher<List<AuthorityRuleEntity>> rulePublisher;
 
     @GetMapping("/rules")
     @AuthAction(PrivilegeType.READ_RULE)
@@ -72,8 +77,10 @@ public class AuthorityRuleController {
             return Result.ofFail(-1, "Invalid parameter: port");
         }
         try {
-            List<AuthorityRuleEntity> rules = sentinelApiClient.fetchAuthorityRulesOfMachine(app, ip, port);
-            rules = repository.saveAll(rules);
+            List<AuthorityRuleEntity> allRules = ruleProvider.getRules(app);
+            List<AuthorityRuleEntity> rules = allRules.stream().filter(e->ip.equals(e.getIp())&&port.equals(e.getPort())).collect(
+                    Collectors.toList());
+            repository.saveAll(allRules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
             logger.error("Error when querying authority rules", throwable);
@@ -185,7 +192,19 @@ public class AuthorityRuleController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+        try {
+            publishRules2Apollo(app);
+            return true;
+        }catch (Exception e){
+            logger.error("publish apollo error",e);
+            return false;
+        }
+//        List<AuthorityRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
+//        return sentinelApiClient.setAuthorityRuleOfMachine(app, ip, port, rules);
+    }
+    private void publishRules2Apollo(/*@NonNull*/ String app) throws Exception {
+
+        List<AuthorityRuleEntity> rules = repository.findAllByApp(app);
+        rulePublisher.publish(app, rules);
     }
 }
