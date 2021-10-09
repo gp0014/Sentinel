@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.authority;
+package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.gatewayflow;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -30,23 +30,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-/**
- * @author darren
- */
-@Component("authorityRuleApolloPublisher")
-public class AuthorityRuleApolloPublisher implements DynamicRulePublisher<List<AuthorityRuleEntity>> {
+@Component("gatewayFlowRuleApolloPublisher")
+public class GatewayFlowRuleApolloPublisher implements DynamicRulePublisher<List<GatewayFlowRuleEntity>> {
 
     @Autowired
     private ApolloConfigService apolloConfigService;
 
     @Override
-    public void publish(String app, List<AuthorityRuleEntity> ruleEntities) throws Exception {
+    public void publish(String app, List<GatewayFlowRuleEntity> ruleEntities) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
         if (ruleEntities == null) {
             return;
         }
         AppSentinelApolloConfig appSentinelConfig = apolloConfigService.getOrInitAppSentinelConfig(app);
-        final List<AuthorityRule> rules = ruleEntities.stream().map(AuthorityRuleEntity::toRule).collect(Collectors.toList());
-        apolloConfigService.saveConfigAndPublish(app, JSON.toJSONString(rules, SerializerFeature.WriteClassName), appSentinelConfig, appSentinelConfig.getAuthorityRuleKey());
+        final List<GatewayFlowRule> rules = ruleEntities.stream().map(GatewayFlowRuleEntity::toGatewayFlowRule).collect(Collectors.toList());
+        apolloConfigService.saveConfigAndPublish(app, JSON.toJSONString(rules, SerializerFeature.WriteClassName), appSentinelConfig, appSentinelConfig.getGatewayFlowRuleKey());
     }
 }

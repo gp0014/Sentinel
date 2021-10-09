@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.authority;
+package com.alibaba.csp.sentinel.dashboard.rule.apollo.gateway;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiDefinition;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.ApiDefinitionEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
@@ -32,18 +32,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-/**
- * @author darren
- */
-@Component("authorityRuleApolloProvider")
-public class AuthorityRuleApolloProvider implements DynamicRuleProvider<List<AuthorityRuleEntity>> {
-
+@Component("apiDefinitionApolloProvider")
+public class ApiDefinitionApolloProvider implements DynamicRuleProvider<List<ApiDefinitionEntity>> {
 
     @Autowired
     private ApolloConfigService apolloConfigService;
 
     @Override
-    public List<AuthorityRuleEntity> getRules(String appId) throws Exception {
+    public List<ApiDefinitionEntity> getRules(String appId) throws Exception {
         //动态从apollo拉取应用的Sentinel配置信息
         AppSentinelApolloConfig appSentinelConfig = apolloConfigService.getOrInitAppSentinelConfig(appId);
         //动态拉取namespace
@@ -51,16 +47,16 @@ public class AuthorityRuleApolloProvider implements DynamicRuleProvider<List<Aut
         String rules = openNamespaceDTO
                 .getItems()
                 .stream()
-                .filter(p -> p.getKey().equals(appSentinelConfig.getAuthorityRuleKey()))
+                .filter(p -> p.getKey().equals(appSentinelConfig.getApiDefinitionRuleKey()))
                 .map(OpenItemDTO::getValue)
                 .findFirst()
                 .orElse("");
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
-        final List<AuthorityRule> authorityRules = JSON.parseArray(rules, AuthorityRule.class);
-        return authorityRules.stream()
-                .map(rule -> AuthorityRuleEntity.fromAuthorityRule(appId, null, null, rule))
+        final List<ApiDefinition> apiDefinitions = JSON.parseArray(rules, ApiDefinition.class);
+        return apiDefinitions.stream()
+                .map(def -> ApiDefinitionEntity.fromApiDefinition(appId, null, null, def))
                 .collect(Collectors.toList());
     }
 }

@@ -19,14 +19,17 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.FlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
-import com.alibaba.csp.sentinel.datasource.Converter;
+import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
+import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -35,9 +38,6 @@ import org.springframework.stereotype.Component;
 @Component("flowRuleApolloProvider")
 public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
 
-
-    @Autowired
-    private Converter<String, List<FlowRuleEntity>> converter;
     @Autowired
     private ApolloConfigService apolloConfigService;
 
@@ -48,15 +48,18 @@ public class FlowRuleApolloProvider implements DynamicRuleProvider<List<FlowRule
         //动态拉取namespace
         OpenNamespaceDTO openNamespaceDTO = apolloConfigService.getNameSpaceByAppIdAndSentinelApolloConfig(appId, appSentinelConfig);
         String rules = openNamespaceDTO
-            .getItems()
-            .stream()
-            .filter(p -> p.getKey().equals(appSentinelConfig.getFlowRuleKey()))
-            .map(OpenItemDTO::getValue)
-            .findFirst()
-            .orElse("");
+                .getItems()
+                .stream()
+                .filter(p -> p.getKey().equals(appSentinelConfig.getFlowRuleKey()))
+                .map(OpenItemDTO::getValue)
+                .findFirst()
+                .orElse("");
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
-        return converter.convert(rules);
+        final List<FlowRule> flowRules = JSON.parseArray(rules, FlowRule.class);
+        return flowRules.stream()
+                .map(rule -> FlowRuleEntity.fromFlowRule(appId, null, null, rule))
+                .collect(Collectors.toList());
     }
 }

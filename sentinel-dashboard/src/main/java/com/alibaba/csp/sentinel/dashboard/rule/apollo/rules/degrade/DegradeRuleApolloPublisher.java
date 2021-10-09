@@ -19,11 +19,15 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEnti
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.JSON;
-import java.util.List;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -36,12 +40,13 @@ public class DegradeRuleApolloPublisher implements DynamicRulePublisher<List<Deg
     private ApolloConfigService apolloConfigService;
 
     @Override
-    public void publish(String app, List<DegradeRuleEntity> rules) throws Exception {
+    public void publish(String app, List<DegradeRuleEntity> ruleEntities) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
-        if (rules == null) {
+        if (ruleEntities == null) {
             return;
         }
         AppSentinelApolloConfig appSentinelConfig = apolloConfigService.getOrInitAppSentinelConfig(app);
-        apolloConfigService.saveConfigAndPublish(app, JSON.toJSONString(rules),appSentinelConfig,appSentinelConfig.getDegradeRuleKey() );
+        final List<DegradeRule> rules = ruleEntities.stream().map(DegradeRuleEntity::toRule).collect(Collectors.toList());
+        apolloConfigService.saveConfigAndPublish(app, JSON.toJSONString(rules, SerializerFeature.WriteClassName), appSentinelConfig, appSentinelConfig.getDegradeRuleKey());
     }
 }

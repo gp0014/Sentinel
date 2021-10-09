@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.authority;
+package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.gatewayflow;
 
-import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AuthorityRuleEntity;
+import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
-import com.alibaba.csp.sentinel.slots.block.authority.AuthorityRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
@@ -32,18 +32,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-/**
- * @author darren
- */
-@Component("authorityRuleApolloProvider")
-public class AuthorityRuleApolloProvider implements DynamicRuleProvider<List<AuthorityRuleEntity>> {
-
+@Component("gatewayFlowRuleApolloProvider")
+public class GatewayFlowRuleApolloProvider implements DynamicRuleProvider<List<GatewayFlowRuleEntity>> {
 
     @Autowired
     private ApolloConfigService apolloConfigService;
 
     @Override
-    public List<AuthorityRuleEntity> getRules(String appId) throws Exception {
+    public List<GatewayFlowRuleEntity> getRules(String appId) throws Exception {
         //动态从apollo拉取应用的Sentinel配置信息
         AppSentinelApolloConfig appSentinelConfig = apolloConfigService.getOrInitAppSentinelConfig(appId);
         //动态拉取namespace
@@ -51,16 +47,16 @@ public class AuthorityRuleApolloProvider implements DynamicRuleProvider<List<Aut
         String rules = openNamespaceDTO
                 .getItems()
                 .stream()
-                .filter(p -> p.getKey().equals(appSentinelConfig.getAuthorityRuleKey()))
+                .filter(p -> p.getKey().equals(appSentinelConfig.getGatewayFlowRuleKey()))
                 .map(OpenItemDTO::getValue)
                 .findFirst()
                 .orElse("");
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
-        final List<AuthorityRule> authorityRules = JSON.parseArray(rules, AuthorityRule.class);
-        return authorityRules.stream()
-                .map(rule -> AuthorityRuleEntity.fromAuthorityRule(appId, null, null, rule))
+        final List<GatewayFlowRule> gatewayFlowRules = JSON.parseArray(rules, GatewayFlowRule.class);
+        return gatewayFlowRules.stream()
+                .map(rule -> GatewayFlowRuleEntity.fromGatewayFlowRule(appId, null, null, rule))
                 .collect(Collectors.toList());
     }
 }

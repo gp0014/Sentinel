@@ -10,15 +10,19 @@ public class AppSentinelApolloConfig {
 
     private String flowRuleKey = SentinelApolloConstant.DEFAULT_FLOW_RULE_KEY;
 
-    private String degradeRuleKey =SentinelApolloConstant.DEFAULT_DEGRADE_RULE_KEY;
+    private String degradeRuleKey = SentinelApolloConstant.DEFAULT_DEGRADE_RULE_KEY;
 
     private String paramFlowRuleKey = SentinelApolloConstant.DEFAULT_PARAM_FLOW_RULE_KEY;
 
     private String authorityRuleKey = SentinelApolloConstant.DEFAULT_AUTHORITY_RULE_KEY;
 
+    private String gatewayFlowRuleKey = SentinelApolloConstant.DEFAULT_GATEWAY_FLOW_RULE_KEY;
+
+    private String apiDefinitionRuleKey = SentinelApolloConstant.DEFAULT_API_DEFINITION_RULE_KEY;
+
     public AppSentinelApolloConfig(String namespace) {
         super();
-        this.namespace=namespace;
+        this.namespace = namespace;
     }
 
     public String getNamespace() {
@@ -61,6 +65,19 @@ public class AppSentinelApolloConfig {
         this.authorityRuleKey = authorityRuleKey;
     }
 
+    public String getGatewayFlowRuleKey() {
+        return gatewayFlowRuleKey;
+    }
 
+    public void setGatewayFlowRuleKey(String gatewayFlowRuleKey) {
+        this.gatewayFlowRuleKey = gatewayFlowRuleKey;
+    }
 
+    public String getApiDefinitionRuleKey() {
+        return apiDefinitionRuleKey;
+    }
+
+    public void setApiDefinitionRuleKey(String apiDefinitionRuleKey) {
+        this.apiDefinitionRuleKey = apiDefinitionRuleKey;
+    }
 }

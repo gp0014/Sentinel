@@ -19,14 +19,17 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEnti
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -45,15 +48,18 @@ public class DegradeRuleApolloProvider implements DynamicRuleProvider<List<Degra
         //动态拉取namespace
         OpenNamespaceDTO openNamespaceDTO = apolloConfigService.getNameSpaceByAppIdAndSentinelApolloConfig(appId, appSentinelConfig);
         String rules = openNamespaceDTO
-            .getItems()
-            .stream()
-            .filter(p -> p.getKey().equals(appSentinelConfig.getDegradeRuleKey()))
-            .map(OpenItemDTO::getValue)
-            .findFirst()
-            .orElse("");
+                .getItems()
+                .stream()
+                .filter(p -> p.getKey().equals(appSentinelConfig.getDegradeRuleKey()))
+                .map(OpenItemDTO::getValue)
+                .findFirst()
+                .orElse("");
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
-        return JSON.parseArray(rules, DegradeRuleEntity.class);
+        final List<DegradeRule> degradeRules = JSON.parseArray(rules, DegradeRule.class);
+        return degradeRules.stream()
+                .map(rule -> DegradeRuleEntity.fromDegradeRule(appId, null, null, rule))
+                .collect(Collectors.toList());
     }
 }

@@ -19,14 +19,17 @@ import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEn
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.ctrip.framework.apollo.openapi.dto.OpenItemDTO;
 import com.ctrip.framework.apollo.openapi.dto.OpenNamespaceDTO;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -46,16 +49,19 @@ public class ParamFlowRuleApolloProvider implements DynamicRuleProvider<List<Par
         //动态拉取namespace
         OpenNamespaceDTO openNamespaceDTO = apolloConfigService.getNameSpaceByAppIdAndSentinelApolloConfig(appId, appSentinelConfig);
         String rules = openNamespaceDTO
-            .getItems()
-            .stream()
-            .filter(p -> p.getKey().equals(appSentinelConfig.getParamFlowRuleKey()))
-            .map(OpenItemDTO::getValue)
-            .findFirst()
-            .orElse("");
+                .getItems()
+                .stream()
+                .filter(p -> p.getKey().equals(appSentinelConfig.getParamFlowRuleKey()))
+                .map(OpenItemDTO::getValue)
+                .findFirst()
+                .orElse("");
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
-         return JSON.parseArray(rules, ParamFlowRuleEntity.class);
+        final List<ParamFlowRule> paramFlowRules = JSON.parseArray(rules, ParamFlowRule.class);
+        return paramFlowRules.stream()
+                .map(rule -> ParamFlowRuleEntity.fromParamFlowRule(appId, null, null, rule))
+                .collect(Collectors.toList());
 
     }
 }

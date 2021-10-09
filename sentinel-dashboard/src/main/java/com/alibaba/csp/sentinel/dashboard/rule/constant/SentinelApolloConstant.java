@@ -12,15 +12,13 @@ public class SentinelApolloConstant {
 
     private static Map<String, String> initMap() {
         Map<String, String> map = new HashMap<>(4);
-        map.put(APOLLO_FLOW_RULE_KEY,DEFAULT_FLOW_RULE_KEY);
-        map.put(APOLLO_NAMESPACE_KEY,DEFAULT_NAMESPACE);
-        map.put(APOLLO_DEGRADE_RULE_KEY,DEFAULT_DEGRADE_RULE_KEY);
-        map.put(APOLLO_PARAM_FLOW_RULE_KEY,DEFAULT_PARAM_FLOW_RULE_KEY);
-        map.put(APOLLO_AUTHORITY_RULE_KEY,DEFAULT_AUTHORITY_RULE_KEY);
+        map.put(APOLLO_FLOW_RULE_KEY, DEFAULT_FLOW_RULE_KEY);
+        map.put(APOLLO_NAMESPACE_KEY, DEFAULT_NAMESPACE);
+        map.put(APOLLO_DEGRADE_RULE_KEY, DEFAULT_DEGRADE_RULE_KEY);
+        map.put(APOLLO_PARAM_FLOW_RULE_KEY, DEFAULT_PARAM_FLOW_RULE_KEY);
+        map.put(APOLLO_AUTHORITY_RULE_KEY, DEFAULT_AUTHORITY_RULE_KEY);
         return Collections.unmodifiableMap(map);
     }
-
-
 
 
     /**
@@ -41,11 +39,15 @@ public class SentinelApolloConstant {
      */
     public static final String APOLLO_AUTHORITY_RULE_KEY = "kucoin.sentinel.apollo.authorityRules";
 
+    public static final String APOLLO_GATEWAY_FLOW_RULE_KEY = "kucoin.sentinel.apollo.gatewayFlowRules";
+
+    public static final String APOLLO_API_DEFINITION_RULE_KEY = "kucoin.sentinel.apollo.apiDefinitionRules";
+
 
     /**
      * 默认的namespace
      */
-   public static final String DEFAULT_NAMESPACE = "sentinel.rules";
+    public static final String DEFAULT_NAMESPACE = "sentinel.rules";
     /**
      * 默认的流控规则key
      */
@@ -62,5 +64,15 @@ public class SentinelApolloConstant {
      * 默认的授权规则key
      */
     public static final String DEFAULT_AUTHORITY_RULE_KEY = "authorityRules";
+
+    /**
+     * 默认的网关流控规则key
+     */
+    public static final String DEFAULT_GATEWAY_FLOW_RULE_KEY = "gatewayFlowRules";
+
+    /**
+     * 默认的api分组规则key
+     */
+    public static final String DEFAULT_API_DEFINITION_RULE_KEY = "apiDefinitionRules";
 }
 

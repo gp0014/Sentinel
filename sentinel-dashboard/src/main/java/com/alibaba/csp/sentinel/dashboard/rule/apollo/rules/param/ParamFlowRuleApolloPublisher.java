@@ -15,15 +15,20 @@
  */
 package com.alibaba.csp.sentinel.dashboard.rule.apollo.rules.param;
 
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.AbstractRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.ParamFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.rule.AppSentinelApolloConfig;
 import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.dashboard.rule.apollo.ApolloConfigService;
+import com.alibaba.csp.sentinel.slots.block.flow.param.ParamFlowRule;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.fastjson.JSON;
-import java.util.List;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -36,12 +41,13 @@ public class ParamFlowRuleApolloPublisher implements DynamicRulePublisher<List<P
     private ApolloConfigService apolloConfigService;
 
     @Override
-    public void publish(String app, List<ParamFlowRuleEntity> rules) throws Exception {
+    public void publish(String app, List<ParamFlowRuleEntity> ruleEntities) throws Exception {
         AssertUtil.notEmpty(app, "app name cannot be empty");
-        if (rules == null) {
+        if (ruleEntities == null) {
             return;
         }
         AppSentinelApolloConfig appSentinelConfig = apolloConfigService.getOrInitAppSentinelConfig(app);
-        apolloConfigService.saveConfigAndPublish(app, JSON.toJSONString(rules),appSentinelConfig,appSentinelConfig.getParamFlowRuleKey() );
+        final List<ParamFlowRule> rules = ruleEntities.stream().map(ParamFlowRuleEntity::toRule).collect(Collectors.toList());
+        apolloConfigService.saveConfigAndPublish(app, JSON.toJSONString(rules, SerializerFeature.WriteClassName), appSentinelConfig, appSentinelConfig.getParamFlowRuleKey());
     }
 }
